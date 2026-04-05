@@ -1,0 +1,1100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MSc ECE — TU Dublin Study Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0c10;
+    --surface: #111318;
+    --card: #161921;
+    --border: rgba(255,255,255,0.07);
+    --border-bright: rgba(255,255,255,0.15);
+    --text: #f0f2f8;
+    --muted: #6b7280;
+    --accent: #4fffb0;
+    --accent2: #7b8cff;
+    --accent3: #ff8c5a;
+    --warn: #ffd060;
+    --red: #ff5a6e;
+    --green: #4fffb0;
+    --sem1: #7b8cff;
+    --sem2: #ff8c5a;
+    --core: #ffd060;
+    --elective: #4fffb0;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Grid BG */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(75,255,176,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(75,255,176,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .glow {
+    position: fixed;
+    width: 600px; height: 600px;
+    border-radius: 50%;
+    filter: blur(120px);
+    pointer-events: none;
+    z-index: 0;
+  }
+  .glow-1 { top: -200px; left: -100px; background: rgba(123,140,255,0.07); }
+  .glow-2 { bottom: -200px; right: -100px; background: rgba(79,255,176,0.05); }
+
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 1; }
+
+  /* HEADER */
+  header {
+    padding: 32px 0 0;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 32px;
+  }
+
+  .header-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    padding-bottom: 24px;
+  }
+
+  .badge-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+  .badge {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 4px;
+  }
+  .badge-green { background: rgba(79,255,176,0.12); color: var(--accent); border: 1px solid rgba(79,255,176,0.25); }
+  .badge-blue { background: rgba(123,140,255,0.12); color: var(--accent2); border: 1px solid rgba(123,140,255,0.25); }
+  .badge-warn { background: rgba(255,208,96,0.10); color: var(--warn); border: 1px solid rgba(255,208,96,0.22); }
+
+  h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(22px, 4vw, 36px);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    color: #fff;
+  }
+  h1 span { color: var(--accent); }
+
+  .sub {
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 6px;
+    font-family: 'DM Mono', monospace;
+  }
+
+  /* STAT ROW */
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 12px;
+    margin-bottom: 32px;
+  }
+
+  .stat-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    position: relative;
+    overflow: hidden;
+  }
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+  }
+  .stat-card.green::before { background: var(--accent); }
+  .stat-card.blue::before { background: var(--accent2); }
+  .stat-card.warn::before { background: var(--warn); }
+  .stat-card.red::before { background: var(--red); }
+
+  .stat-label {
+    font-size: 11px;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    margin-bottom: 8px;
+  }
+  .stat-value {
+    font-family: 'Syne', sans-serif;
+    font-size: 28px;
+    font-weight: 700;
+    color: #fff;
+  }
+  .stat-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+  /* PROGRESS BAR */
+  .prog-wrap { margin-bottom: 32px; }
+  .prog-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 6px;
+    font-family: 'DM Mono', monospace;
+  }
+  .prog-track {
+    height: 6px;
+    background: var(--card);
+    border-radius: 99px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+  .prog-bar {
+    height: 100%;
+    border-radius: 99px;
+    background: linear-gradient(90deg, var(--accent2), var(--accent));
+    transition: width 0.6s cubic-bezier(.4,0,.2,1);
+  }
+
+  /* TABS */
+  .tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 24px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 4px;
+    width: fit-content;
+  }
+  .tab {
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 8px 18px;
+    border-radius: 7px;
+    cursor: pointer;
+    color: var(--muted);
+    border: none;
+    background: transparent;
+    transition: all 0.2s;
+  }
+  .tab.active { background: var(--card); color: #fff; border: 1px solid var(--border-bright); }
+  .tab:hover:not(.active) { color: var(--text); }
+
+  /* CONTENT PANELS */
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* SEMESTER COLUMNS */
+  .sem-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 32px;
+  }
+  @media (max-width: 680px) { .sem-grid { grid-template-columns: 1fr; } }
+
+  .sem-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .sem-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+  }
+  .sem-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  /* MODULE CARDS */
+  .module-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: border-color 0.2s, transform 0.15s;
+    position: relative;
+  }
+  .module-card:hover { border-color: var(--border-bright); transform: translateY(-1px); }
+  .module-card.done { border-color: rgba(79,255,176,0.3); background: rgba(79,255,176,0.04); }
+
+  .module-top {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .module-check {
+    width: 18px; height: 18px;
+    border-radius: 5px;
+    border: 1.5px solid var(--border-bright);
+    flex-shrink: 0;
+    margin-top: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    transition: all 0.2s;
+    cursor: pointer;
+  }
+  .module-card.done .module-check {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #000;
+  }
+  .module-name {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+    line-height: 1.4;
+    flex: 1;
+  }
+  .module-card.done .module-name { color: var(--muted); text-decoration: line-through; }
+
+  .module-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+    flex-wrap: wrap;
+  }
+  .tag {
+    font-size: 10px;
+    font-family: 'DM Mono', monospace;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-weight: 500;
+  }
+  .tag-core { background: rgba(255,208,96,0.12); color: var(--warn); }
+  .tag-elec { background: rgba(79,255,176,0.10); color: var(--accent); }
+  .tag-credits { background: rgba(255,255,255,0.06); color: var(--muted); }
+
+  /* MODULE EXPAND */
+  .module-detail {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.35s cubic-bezier(.4,0,.2,1);
+  }
+  .module-detail.open { max-height: 300px; }
+  .module-detail-inner {
+    border-top: 1px solid var(--border);
+    margin-top: 12px;
+    padding-top: 12px;
+  }
+
+  .topics-label {
+    font-size: 10px;
+    font-family: 'DM Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+  .topic-list { list-style: none; }
+  .topic-list li {
+    font-size: 12px;
+    color: var(--muted);
+    padding: 3px 0;
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+  }
+  .topic-list li::before {
+    content: '›';
+    color: var(--accent);
+    flex-shrink: 0;
+  }
+
+  /* DAILY LOG */
+  .log-section { margin-bottom: 32px; }
+  .section-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-title span {
+    width: 20px; height: 2px;
+    background: var(--accent);
+    display: inline-block;
+  }
+
+  .log-form {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  @media (max-width: 540px) { .form-row { grid-template-columns: 1fr; } }
+
+  .form-group label {
+    display: block;
+    font-size: 11px;
+    font-family: 'DM Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    padding: 9px 12px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .form-group input:focus,
+  .form-group select:focus,
+  .form-group textarea:focus {
+    border-color: var(--accent2);
+  }
+  .form-group textarea { resize: vertical; min-height: 70px; }
+  .form-group select option { background: #1a1d24; }
+
+  .mood-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .mood-btn {
+    flex: 1;
+    padding: 8px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--muted);
+    font-size: 18px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.2s;
+    line-height: 1;
+  }
+  .mood-btn.active { border-color: var(--accent2); background: rgba(123,140,255,0.15); }
+
+  .btn-add {
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 10px 20px;
+    border-radius: 8px;
+    background: var(--accent);
+    color: #000;
+    border: none;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.15s;
+    letter-spacing: 0.02em;
+  }
+  .btn-add:hover { opacity: 0.88; transform: translateY(-1px); }
+  .btn-add:active { transform: scale(0.97); }
+
+  /* LOG ENTRIES */
+  .log-entry {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    display: flex;
+    gap: 14px;
+  }
+  .log-date-col {
+    text-align: center;
+    flex-shrink: 0;
+    width: 50px;
+  }
+  .log-day {
+    font-family: 'Syne', sans-serif;
+    font-size: 18px;
+    font-weight: 800;
+    color: #fff;
+    line-height: 1;
+  }
+  .log-month {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+  .log-content { flex: 1; }
+  .log-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .log-module-name {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+  }
+  .log-hours {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    flex-shrink: 0;
+  }
+  .log-note {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 4px;
+    line-height: 1.5;
+  }
+  .log-mood { font-size: 14px; margin-top: 4px; }
+
+  .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    border: 1px dashed var(--border);
+    border-radius: 12px;
+  }
+
+  /* OVERVIEW */
+  .overview-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 24px;
+  }
+  @media (max-width: 620px) { .overview-grid { grid-template-columns: 1fr; } }
+
+  .module-progress-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .mp-name {
+    font-size: 12px;
+    color: var(--text);
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .mp-bar-track {
+    width: 80px;
+    height: 5px;
+    background: var(--surface);
+    border-radius: 99px;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  .mp-bar {
+    height: 100%;
+    border-radius: 99px;
+    background: linear-gradient(90deg, var(--accent2), var(--accent));
+    transition: width 0.5s;
+  }
+  .mp-pct {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    min-width: 30px;
+    text-align: right;
+  }
+
+  .heatmap-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+    margin-top: 12px;
+  }
+  .hm-day {
+    aspect-ratio: 1;
+    border-radius: 4px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 9px;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    transition: background 0.2s;
+    cursor: default;
+    position: relative;
+  }
+  .hm-day[title]:hover::after {
+    content: attr(title);
+    position: absolute;
+    bottom: calc(100% + 4px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--surface);
+    border: 1px solid var(--border-bright);
+    border-radius: 6px;
+    padding: 4px 8px;
+    font-size: 10px;
+    white-space: nowrap;
+    color: var(--text);
+    z-index: 10;
+  }
+  .hm-label-row {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+    margin-bottom: 4px;
+  }
+  .hm-label {
+    text-align: center;
+    font-size: 9px;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+  }
+
+  /* DELETE BTN */
+  .del-btn {
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-size: 14px;
+    cursor: pointer;
+    padding: 2px 6px;
+    border-radius: 4px;
+    transition: color 0.2s, background 0.2s;
+    flex-shrink: 0;
+  }
+  .del-btn:hover { color: var(--red); background: rgba(255,90,110,0.1); }
+
+  /* TOAST */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: var(--card);
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    padding: 10px 20px;
+    border-radius: 8px;
+    z-index: 100;
+    transition: transform 0.3s cubic-bezier(.4,0,.2,1);
+    pointer-events: none;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  .info-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+  .info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 14px;
+  }
+  .info-item {}
+  .info-key {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--muted);
+    margin-bottom: 3px;
+  }
+  .info-val {
+    font-size: 13px;
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  .scroll-hint {
+    font-size: 11px;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    text-align: right;
+    margin-bottom: 8px;
+  }
+</style>
+</head>
+<body>
+<div class="glow glow-1"></div>
+<div class="glow glow-2"></div>
+
+<header>
+  <div class="wrap">
+    <div class="header-top">
+      <div>
+        <div class="badge-row">
+          <span class="badge badge-blue">TU Dublin · TU203</span>
+          <span class="badge badge-green">MSc Level 9</span>
+          <span class="badge badge-warn">90 ECTS · 1 Year</span>
+        </div>
+        <h1>MSc Electronic &<br><span>Communications Engineering</span></h1>
+        <div class="sub">Grangegorman, Dublin &nbsp;·&nbsp; Sept 2026 Intake &nbsp;·&nbsp; Study Tracker</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="wrap" style="padding-bottom: 60px;">
+
+  <!-- STATS -->
+  <div class="stats" id="statsRow"></div>
+
+  <!-- OVERALL PROGRESS -->
+  <div class="prog-wrap">
+    <div class="prog-label">
+      <span>Overall module completion</span>
+      <span id="progPct">0%</span>
+    </div>
+    <div class="prog-track"><div class="prog-bar" id="progBar" style="width:0%"></div></div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('modules')">Modules</button>
+    <button class="tab" onclick="switchTab('daily')">Daily Log</button>
+    <button class="tab" onclick="switchTab('overview')">Overview</button>
+    <button class="tab" onclick="switchTab('info')">Course Info</button>
+  </div>
+
+  <!-- MODULES PANEL -->
+  <div class="panel active" id="panel-modules">
+    <div class="sem-grid">
+      <div>
+        <div class="sem-header">
+          <div class="sem-dot" style="background:var(--sem1)"></div>
+          <div class="sem-title" style="color:var(--sem1)">Semester 1</div>
+        </div>
+        <div id="sem1-modules"></div>
+      </div>
+      <div>
+        <div class="sem-header">
+          <div class="sem-dot" style="background:var(--sem2)"></div>
+          <div class="sem-title" style="color:var(--sem2)">Semester 2</div>
+        </div>
+        <div id="sem2-modules"></div>
+      </div>
+    </div>
+    <div style="margin-top:4px; font-size:12px; color:var(--muted); font-family:'DM Mono',monospace;">
+      Click any module to expand topics. Check the box to mark as completed.
+    </div>
+  </div>
+
+  <!-- DAILY LOG PANEL -->
+  <div class="panel" id="panel-daily">
+    <div class="log-section">
+      <div class="section-title"><span></span> Add Today's Study Session</div>
+      <div class="log-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Date</label>
+            <input type="date" id="logDate">
+          </div>
+          <div class="form-group">
+            <label>Module</label>
+            <select id="logModule"></select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Hours studied</label>
+            <input type="number" id="logHours" min="0.5" max="12" step="0.5" value="2" placeholder="2">
+          </div>
+          <div class="form-group">
+            <label>Topic covered</label>
+            <input type="text" id="logTopic" placeholder="e.g. Matched filters, VLSI layout...">
+          </div>
+        </div>
+        <div class="form-group" style="margin-bottom:12px;">
+          <label>Notes / reflections</label>
+          <textarea id="logNote" placeholder="What did you learn? Any blockers? Key takeaways..."></textarea>
+        </div>
+        <div class="form-group" style="margin-bottom:14px;">
+          <label>How was the session?</label>
+          <div class="mood-row">
+            <button class="mood-btn" data-mood="😴" onclick="selectMood(this)">😴</button>
+            <button class="mood-btn" data-mood="😐" onclick="selectMood(this)">😐</button>
+            <button class="mood-btn active" data-mood="🙂" onclick="selectMood(this)">🙂</button>
+            <button class="mood-btn" data-mood="😄" onclick="selectMood(this)">😄</button>
+            <button class="mood-btn" data-mood="🔥" onclick="selectMood(this)">🔥</button>
+          </div>
+        </div>
+        <button class="btn-add" onclick="addLog()">+ Log Session</button>
+      </div>
+
+      <div class="section-title"><span></span> Study History</div>
+      <div id="logEntries"></div>
+    </div>
+  </div>
+
+  <!-- OVERVIEW PANEL -->
+  <div class="panel" id="panel-overview">
+    <div class="overview-grid">
+      <div class="info-card">
+        <div class="section-title" style="font-size:14px; margin-bottom:14px;"><span></span>Hours by Module</div>
+        <div id="moduleHoursChart"></div>
+      </div>
+      <div class="info-card">
+        <div class="section-title" style="font-size:14px; margin-bottom:14px;"><span></span>Study Activity (Last 4 Weeks)</div>
+        <div class="hm-label-row">
+          <div class="hm-label">M</div><div class="hm-label">T</div><div class="hm-label">W</div>
+          <div class="hm-label">T</div><div class="hm-label">F</div><div class="hm-label">S</div><div class="hm-label">S</div>
+        </div>
+        <div class="heatmap-grid" id="heatmap"></div>
+      </div>
+    </div>
+    <div class="info-card">
+      <div class="section-title" style="font-size:14px; margin-bottom:14px;"><span></span>Module Completion</div>
+      <div id="moduleCompletion"></div>
+    </div>
+  </div>
+
+  <!-- INFO PANEL -->
+  <div class="panel" id="panel-info">
+    <div class="info-card">
+      <div class="section-title" style="font-size:14px; margin-bottom:16px;"><span></span>Course Details</div>
+      <div class="info-grid">
+        <div class="info-item"><div class="info-key">Award</div><div class="info-val">Master of Science (MSc)</div></div>
+        <div class="info-item"><div class="info-key">NFQ Level</div><div class="info-val">Level 9</div></div>
+        <div class="info-item"><div class="info-key">ECTS Credits</div><div class="info-val">90 Credits</div></div>
+        <div class="info-item"><div class="info-key">Duration</div><div class="info-val">1 Year Full-Time</div></div>
+        <div class="info-item"><div class="info-key">Location</div><div class="info-val">Grangegorman, Dublin</div></div>
+        <div class="info-item"><div class="info-key">Start Date</div><div class="info-val">September 2026</div></div>
+        <div class="info-item"><div class="info-key">EU Fees</div><div class="info-val">€7,000 total</div></div>
+        <div class="info-item"><div class="info-key">Non-EU Fees</div><div class="info-val">€14,500 total</div></div>
+        <div class="info-item"><div class="info-key">Weekly Contact</div><div class="info-val">~18 hours/week</div></div>
+        <div class="info-item"><div class="info-key">Course Code</div><div class="info-val">TU203</div></div>
+      </div>
+    </div>
+    <div class="info-card">
+      <div class="section-title" style="font-size:14px; margin-bottom:16px;"><span></span>Entry Requirements</div>
+      <p style="font-size:13px; color:var(--muted); line-height:1.7; margin-bottom:10px;">Minimum 2.2 Honours Bachelor Degree in Electronic, Computer or Communications Engineering or a related discipline. Applied Physics graduates and candidates with strong industrial experience may also be considered.</p>
+      <p style="font-size:13px; color:var(--muted); line-height:1.7;">English language: Minimum IELTS 6.0 overall with no less than 6.0 in each component.</p>
+    </div>
+    <div class="info-card">
+      <div class="section-title" style="font-size:14px; margin-bottom:16px;"><span></span>Career Opportunities</div>
+      <p style="font-size:13px; color:var(--muted); line-height:1.7;">Graduates are equipped for high-level roles in research, design, and development within the telecommunications sector and the wider electronics industry — spanning RF engineering, embedded systems, photonics, VLSI design, and more.</p>
+    </div>
+    <div class="info-card">
+      <div class="section-title" style="font-size:14px; margin-bottom:16px;"><span></span>Contact</div>
+      <div class="info-grid">
+        <div class="info-item"><div class="info-key">Programme Coordinator</div><div class="info-val">Andreas Schwarzbacher</div><div class="info-key" style="margin-top:4px;">Andreas.Schwarzbacher@tudublin.ie</div></div>
+        <div class="info-item"><div class="info-key">School</div><div class="info-val">Electrical & Electronic Engineering</div><div class="info-key" style="margin-top:4px;">School.EEE@tudublin.ie</div></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const MODULES = [
+  // Semester 1
+  { id: 'm1', sem: 1, name: 'Independent Research Portfolio', credits: 15, type: 'core', topics: ['Research planning', 'Literature review', 'Dissertation writing', 'Academic referencing', 'Progress reports'] },
+  { id: 'm2', sem: 1, name: 'Innovation & Knowledge Management', credits: 5, type: 'core', topics: ['Innovation frameworks', 'IP management', 'Technology transfer', 'Knowledge creation models', 'R&D strategy'] },
+  { id: 'm3', sem: 1, name: 'Research Methods', credits: 5, type: 'core', topics: ['Quantitative methods', 'Qualitative research', 'Experimental design', 'Data collection', 'Statistical inference'] },
+  { id: 'm4', sem: 1, name: 'Microwave & RF Engineering: Lines & Devices', credits: 5, type: 'elective', topics: ['Transmission lines', 'Smith chart', 'Impedance matching', 'Microwave devices', 'S-parameters'] },
+  { id: 'm5', sem: 1, name: 'Introduction to Digital VLSI Design', credits: 5, type: 'elective', topics: ['CMOS logic', 'Layout & fabrication', 'Timing analysis', 'Standard cell design', 'HDL-to-silicon flow'] },
+  { id: 'm6', sem: 1, name: 'Introduction to Digital System Level Design', credits: 5, type: 'elective', topics: ['FPGA architectures', 'VHDL/Verilog', 'RTL design', 'Simulation tools', 'SoC concepts'] },
+  { id: 'm7', sem: 1, name: 'Nanofabrication 1', credits: 5, type: 'elective', topics: ['Photolithography', 'Thin film deposition', 'Etching techniques', 'Cleanroom processes', 'Semiconductor materials'] },
+  { id: 'm8', sem: 1, name: 'Optoelectronics I: Devices for Optical Comms', credits: 5, type: 'elective', topics: ['Laser diodes', 'Photodetectors', 'Optical fibres', 'LED fundamentals', 'Optical amplifiers'] },
+  { id: 'm9', sem: 1, name: 'Software Defined Radio (SDR)', credits: 5, type: 'elective', topics: ['SDR architecture', 'GNU Radio', 'Digital signal processing', 'Receiver design', 'Waveform programming'] },
+  // Semester 2
+  { id: 'm10', sem: 2, name: 'Entrepreneurship for Engineers', credits: 5, type: 'core', topics: ['Business models', 'Startup finance', 'IP & patents', 'Market validation', 'Engineering ventures'] },
+  { id: 'm11', sem: 2, name: 'Independent Research Portfolio (cont.)', credits: 15, type: 'core', topics: ['Research execution', 'Data analysis', 'Dissertation chapters', 'Peer review process', 'Final presentation'] },
+  { id: 'm12', sem: 2, name: 'Statistical Analysis for Engineers', credits: 5, type: 'core', topics: ['Probability distributions', 'Hypothesis testing', 'Regression analysis', 'ANOVA', 'Engineering data interpretation'] },
+  { id: 'm13', sem: 2, name: 'Microwave & RF Engineering: Radio Propagation', credits: 5, type: 'elective', topics: ['Free-space propagation', 'Multipath fading', 'Antenna theory', 'Link budget', 'Channel models'] },
+  { id: 'm14', sem: 2, name: 'Wireless Communications — Modulation', credits: 5, type: 'elective', topics: ['OFDM', 'QAM/PSK', 'MIMO systems', 'Channel coding', '5G NR basics'] },
+  { id: 'm15', sem: 2, name: 'Network Security', credits: 5, type: 'elective', topics: ['Cryptography', 'PKI & certificates', 'Network protocols', 'Firewalls & IDS', 'Security auditing'] },
+  { id: 'm16', sem: 2, name: 'Embedded Systems', credits: 5, type: 'elective', topics: ['Microcontroller programming', 'RTOS fundamentals', 'Peripheral interfacing', 'Low-power design', 'Sensor integration'] },
+  { id: 'm17', sem: 2, name: 'Machine Learning for Engineers', credits: 5, type: 'elective', topics: ['Supervised learning', 'Neural networks', 'Feature engineering', 'Model evaluation', 'ML in signal processing'] },
+  { id: 'm18', sem: 2, name: 'Nanofabrication 2', credits: 5, type: 'elective', topics: ['Advanced lithography', 'Nanodevice characterisation', 'MEMS processes', 'Self-assembly', 'Nanoelectronics applications'] },
+  { id: 'm19', sem: 2, name: 'Optoelectronics II: Photonic Materials & Devices', credits: 5, type: 'elective', topics: ['Photonic crystals', 'Nonlinear optics', 'Optical waveguides', 'Silicon photonics', 'Integrated photonics'] },
+];
+
+let state = {
+  completed: {},
+  logs: [],
+  mood: '🙂'
+};
+
+function save() { localStorage.setItem('ece_tracker', JSON.stringify(state)); }
+function load() {
+  const d = localStorage.getItem('ece_tracker');
+  if (d) state = { ...state, ...JSON.parse(d) };
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+function switchTab(name) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('active');
+  event.target.classList.add('active');
+  if (name === 'overview') renderOverview();
+}
+
+function toggleModule(id) {
+  state.completed[id] = !state.completed[id];
+  save();
+  renderModules();
+  renderStats();
+}
+
+function expandModule(id) {
+  const detail = document.getElementById('detail-' + id);
+  if (detail) detail.classList.toggle('open');
+}
+
+function renderModules() {
+  [1, 2].forEach(sem => {
+    const mods = MODULES.filter(m => m.sem === sem);
+    let html = '';
+    mods.forEach(m => {
+      const done = !!state.completed[m.id];
+      html += `<div class="module-card ${done ? 'done' : ''}" onclick="expandModule('${m.id}')">
+        <div class="module-top">
+          <div class="module-check" onclick="event.stopPropagation(); toggleModule('${m.id}')">${done ? '✓' : ''}</div>
+          <div class="module-name">${m.name}</div>
+        </div>
+        <div class="module-meta">
+          <span class="tag ${m.type === 'core' ? 'tag-core' : 'tag-elec'}">${m.type === 'core' ? 'Core' : 'Elective'}</span>
+          <span class="tag tag-credits">${m.credits} ECTS</span>
+          <span class="tag tag-credits">Sem ${m.sem}</span>
+        </div>
+        <div class="module-detail" id="detail-${m.id}">
+          <div class="module-detail-inner">
+            <div class="topics-label">Key Topics</div>
+            <ul class="topic-list">${m.topics.map(t => `<li>${t}</li>`).join('')}</ul>
+          </div>
+        </div>
+      </div>`;
+    });
+    document.getElementById(`sem${sem}-modules`).innerHTML = html;
+  });
+}
+
+function renderStats() {
+  const total = MODULES.length;
+  const done = Object.values(state.completed).filter(Boolean).length;
+  const totalHours = state.logs.reduce((a, l) => a + parseFloat(l.hours || 0), 0);
+  const pct = Math.round((done / total) * 100);
+
+  document.getElementById('progBar').style.width = pct + '%';
+  document.getElementById('progPct').textContent = pct + '%';
+
+  document.getElementById('statsRow').innerHTML = `
+    <div class="stat-card blue">
+      <div class="stat-label">Modules</div>
+      <div class="stat-value">${done}/${total}</div>
+      <div class="stat-sub">completed</div>
+    </div>
+    <div class="stat-card green">
+      <div class="stat-label">Hours Logged</div>
+      <div class="stat-value">${totalHours.toFixed(1)}</div>
+      <div class="stat-sub">total study time</div>
+    </div>
+    <div class="stat-card warn">
+      <div class="stat-label">Sessions</div>
+      <div class="stat-value">${state.logs.length}</div>
+      <div class="stat-sub">study sessions</div>
+    </div>
+    <div class="stat-card red">
+      <div class="stat-label">Remaining</div>
+      <div class="stat-value">${total - done}</div>
+      <div class="stat-sub">modules left</div>
+    </div>
+  `;
+}
+
+function populateModuleSelect() {
+  const sel = document.getElementById('logModule');
+  sel.innerHTML = MODULES.map(m => `<option value="${m.id}">${m.name.substring(0, 45)}</option>`).join('');
+}
+
+function selectMood(btn) {
+  document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  state.mood = btn.dataset.mood;
+}
+
+function addLog() {
+  const date = document.getElementById('logDate').value;
+  const moduleId = document.getElementById('logModule').value;
+  const hours = document.getElementById('logHours').value;
+  const topic = document.getElementById('logTopic').value.trim();
+  const note = document.getElementById('logNote').value.trim();
+  if (!date || !hours) { showToast('Please fill in date and hours'); return; }
+  const mod = MODULES.find(m => m.id === moduleId);
+  state.logs.unshift({ date, moduleId, moduleName: mod.name, hours: parseFloat(hours), topic, note, mood: state.mood });
+  save();
+  renderLogs();
+  renderStats();
+  document.getElementById('logHours').value = 2;
+  document.getElementById('logTopic').value = '';
+  document.getElementById('logNote').value = '';
+  showToast('Session logged ✓');
+}
+
+function deleteLog(idx) {
+  state.logs.splice(idx, 1);
+  save();
+  renderLogs();
+  renderStats();
+}
+
+function renderLogs() {
+  const container = document.getElementById('logEntries');
+  if (!state.logs.length) {
+    container.innerHTML = '<div class="empty-state">No sessions yet — start logging your study time above</div>';
+    return;
+  }
+  container.innerHTML = state.logs.map((l, i) => {
+    const d = new Date(l.date + 'T00:00:00');
+    const day = d.getDate();
+    const mon = d.toLocaleString('en', { month: 'short' }).toUpperCase();
+    return `<div class="log-entry">
+      <div class="log-date-col">
+        <div class="log-day">${day}</div>
+        <div class="log-month">${mon}</div>
+      </div>
+      <div class="log-content">
+        <div class="log-top">
+          <div class="log-module-name">${l.moduleName}</div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span class="log-hours">${l.hours}h</span>
+            <button class="del-btn" onclick="deleteLog(${i})" title="Delete">✕</button>
+          </div>
+        </div>
+        ${l.topic ? `<div class="log-note" style="color:var(--text);margin-top:3px;">📌 ${l.topic}</div>` : ''}
+        ${l.note ? `<div class="log-note">${l.note}</div>` : ''}
+        <div class="log-mood">${l.mood}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderOverview() {
+  // Hours by module
+  const hoursByMod = {};
+  state.logs.forEach(l => { hoursByMod[l.moduleId] = (hoursByMod[l.moduleId] || 0) + l.hours; });
+  const maxHours = Math.max(...Object.values(hoursByMod), 1);
+
+  let html = '';
+  const sorted = MODULES.filter(m => hoursByMod[m.id]).sort((a, b) => (hoursByMod[b.id] || 0) - (hoursByMod[a.id] || 0));
+  if (!sorted.length) {
+    html = '<div style="color:var(--muted);font-size:12px;font-family:\'DM Mono\',monospace;">No sessions logged yet.</div>';
+  } else {
+    sorted.forEach(m => {
+      const h = hoursByMod[m.id] || 0;
+      const pct = Math.round((h / maxHours) * 100);
+      html += `<div class="module-progress-row">
+        <div class="mp-name" title="${m.name}">${m.name.substring(0, 28)}${m.name.length > 28 ? '…' : ''}</div>
+        <div class="mp-bar-track"><div class="mp-bar" style="width:${pct}%"></div></div>
+        <div class="mp-pct">${h}h</div>
+      </div>`;
+    });
+  }
+  document.getElementById('moduleHoursChart').innerHTML = html;
+
+  // Heatmap — last 28 days
+  const today = new Date();
+  const heatMap = document.getElementById('heatmap');
+  let hHtml = '';
+  const startDay = new Date(today);
+  startDay.setDate(today.getDate() - 27);
+  // Offset to Monday
+  const dayOfWeek = (startDay.getDay() + 6) % 7;
+  for (let i = 0; i < dayOfWeek; i++) hHtml += `<div class="hm-day"></div>`;
+  for (let d = 0; d < 28; d++) {
+    const cur = new Date(startDay);
+    cur.setDate(startDay.getDate() + d);
+    const ds = cur.toISOString().split('T')[0];
+    const hrs = state.logs.filter(l => l.date === ds).reduce((a, l) => a + l.hours, 0);
+    let bg = 'var(--surface)';
+    if (hrs > 0 && hrs < 2) bg = 'rgba(123,140,255,0.25)';
+    else if (hrs >= 2 && hrs < 4) bg = 'rgba(123,140,255,0.5)';
+    else if (hrs >= 4 && hrs < 6) bg = 'rgba(79,255,176,0.4)';
+    else if (hrs >= 6) bg = 'rgba(79,255,176,0.75)';
+    const label = cur.getDate();
+    const title = hrs ? `${ds}: ${hrs}h` : ds;
+    hHtml += `<div class="hm-day" style="background:${bg};" title="${title}">${label}</div>`;
+  }
+  heatMap.innerHTML = hHtml;
+
+  // Module completion bars
+  let compHtml = '';
+  MODULES.forEach(m => {
+    const done = !!state.completed[m.id];
+    compHtml += `<div class="module-progress-row">
+      <div class="mp-name">${m.name.substring(0, 36)}${m.name.length > 36 ? '…' : ''}</div>
+      <div class="mp-bar-track"><div class="mp-bar" style="width:${done ? 100 : 0}%;background:${done ? 'var(--accent)' : 'var(--border)'}"></div></div>
+      <div class="mp-pct" style="color:${done ? 'var(--accent)' : 'var(--muted)'}">${done ? '✓' : '—'}</div>
+    </div>`;
+  });
+  document.getElementById('moduleCompletion').innerHTML = compHtml;
+}
+
+// Init
+load();
+document.getElementById('logDate').value = new Date().toISOString().split('T')[0];
+populateModuleSelect();
+renderModules();
+renderStats();
+renderLogs();
+</script>
+</body>
+</html>
